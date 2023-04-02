@@ -1,157 +1,196 @@
 import 'package:flutter/material.dart';
+
 import 'package:mosam/services/weather_services.dart';
+import 'package:mosam/utils/customfunctions.dart';
+
+import 'package:mosam/utils/routes.dart';
+import 'package:mosam/view_model/weatherconfig.dart';
+import 'package:provider/provider.dart';
+
+import '../view_model/search.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
+  HomeScreen({super.key, required this.city});
+  final String city;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  TextEditingController searchController = TextEditingController();
   WeatherServices weatherServices = WeatherServices();
-  String city = "karachi";
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = Provider.of<SeachProvider>(context);
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        // backgroundColor: Colors.blueGrey,
+          backgroundColor: Colors.black,
+          resizeToAvoidBottomInset: false,
+          body: FutureBuilder(
+              future: weatherServices.getCityData(widget.city),
+              builder: ((context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  print('yes');
 
-        body: Stack(
-          // alignment: Alignment.center,
-          children: [
-            Container(
-              height: height, //* .97,
-
-              child: Image.asset(
-                "assets/eximage4.jpg",
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                        // hintStyle: TextStyle(color: Colors.black),
-                        hintText: "Search any city",
-                        contentPadding: const EdgeInsets.all(16),
-                        prefixIcon: const Icon(Icons.search),
-                        // color
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20))),
-                  ),
-                  SizedBox(
-                    height: height * .1,
-                  ),
-                  FutureBuilder(
-                      future: weatherServices.getCityData(city.toLowerCase()),
-                      builder: ((context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else {
-                          print(snapshot.data);
-                          return Text(
-                              snapshot.data!.main!.temp.toString()); //??
-                          //Text("adsa");
-                        }
-                      }))
-                  // Text(
-                  //   "24C",
-                  //   textScaleFactor: 3,
-                  // ),
-                  // Text(
-                  //   "feels like 22C",
-                  //   style: Theme.of(context).textTheme.subtitle2,
-                  // ),
-                  // SizedBox(
-                  //   height: height * .005,
-                  // ),
-                  // Text(
-                  //   "Karachi, Pak",
-                  //   textScaleFactor: 2,
-                  // ),
-                  // SizedBox(
-                  //   height: height * .1,
-                  // ),
-                  // Container(
-                  //   height: height * .13,
-                  //   child: ListView.builder(
-                  //       physics: BouncingScrollPhysics(),
-                  //       scrollDirection: Axis.horizontal,
-                  //       itemCount: 5,
-                  //       itemBuilder: ((context, index) {
-                  //         return PredictionContainer(
-                  //           height: height * .1,
-                  //           width: width * .21,
-                  //           day: "Mon",
-                  //           temp: 17,
-                  //           icon: CupertinoIcons.cloud_rain_fill,
-                  //         );
-                  //       })),
-                  // )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+                  return const Center(child: Loading());
+                } else if (!snapshot.hasData) {
+                  print('data nhi mil raha');
+                  return Center(
+                      child: Text(
+                    'Data not found :"(',
+                    style: Theme.of(context).textTheme.subtitle1,
+                  ));
+                } else {
+                  print(snapshot.data);
+                  return Stack(
+                    children: [
+                      Container(
+                        height: height,
+                        color: Colors.black,
+                        child: Image.asset(
+                          "assets/eximage2.jpg",
+                          fit: BoxFit.fitHeight,
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            "${snapshot.data!.name!},${snapshot.data!.sys!.country!}",
+                            textScaleFactor: 2,
+                            style: TextStyle(letterSpacing: 0.5),
+                          ),
+                          SizedBox(
+                            height: height * .005,
+                          ),
+                          Center(
+                            child: Text(
+                              "${snapshot.data!.main!.temp!.toStringAsFixed(0)}°C",
+                              // textScaleFactor: 3,
+                              style: Theme.of(context).textTheme.headline2,
+                            ),
+                          ),
+                          SizedBox(
+                            height: height * .005,
+                          ),
+                          Text(
+                            "feels like ${snapshot.data!.main!.feelsLike!.toStringAsFixed(0)}°C",
+                            style: Theme.of(context).textTheme.subtitle2,
+                          ),
+                          SizedBox(
+                            height: height * .005,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                snapshot.data!.weather![0].main!,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              SizedBox(
+                                width: width * .02,
+                              ),
+                              (WeatherConfig.geticon(snapshot
+                                  .data!.weather![0].icon!
+                                  .toLowerCase()))
+                            ],
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "H:" +
+                                    snapshot.data!.main!.tempMax!
+                                        .toStringAsFixed(0),
+                                style: Theme.of(context).textTheme.subtitle2,
+                              ),
+                              SizedBox(
+                                width: 5,
+                              ),
+                              Text(
+                                "L:" +
+                                    snapshot.data!.main!.tempMin!
+                                        .toStringAsFixed(0),
+                                style: Theme.of(context).textTheme.subtitle2,
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: height * .005,
+                          ),
+                          InfoRow(
+                              title: "Pressure",
+                              value: snapshot.data!.main!.pressure),
+                          InfoRow(
+                              title: "Humidity",
+                              value: "${snapshot.data!.main!.humidity}%"),
+                          InfoRow(
+                              title: "Visibility",
+                              value: "${snapshot.data!.visibility} meters"),
+                          InfoRow(
+                              title: "Wind Speed",
+                              value: snapshot.data!.wind!.speed),
+                          InfoRow(
+                              title: "Direction",
+                              value:
+                                  "${snapshot.data!.wind!.deg!.toStringAsFixed(0)}°"), //in sb ko agar grid view me krden to kesa?
+                          InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, MyRoutes.searchRoute);
+                            },
+                            child: Container(
+                              height: height * .06,
+                              width: width * .4,
+                              decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(30)),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.search),
+                                  Text("Search City")
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  );
+                }
+              }))),
     );
   }
 }
 
-class PredictionContainer extends StatelessWidget {
-  PredictionContainer(
-      {super.key,
-      required this.day,
-      required this.temp,
-      required this.icon,
-      required this.width,
-      required this.height});
-  final String day;
-  num temp;
-  double height, width;
-  IconData icon;
-
+class InfoRow extends StatelessWidget {
+  InfoRow({super.key, required this.title, required this.value});
+  final String title;
+  dynamic value;
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Container(
-        height: height,
-        width: width,
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8)),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(day,
-                textScaleFactor: 1.2, style: TextStyle(color: Colors.black)),
-            SizedBox(
-              height: 5,
-            ),
-            Icon(
-              icon,
-              color: Colors.grey[400],
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            Text(
-              "${temp}C",
-              textScaleFactor: 1.2,
-              style: TextStyle(color: Colors.black),
-            )
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [Text(title), Text(value.toString())],
+          ),
+          const Divider(
+            thickness: 1.2,
+          )
+        ],
       ),
     );
   }

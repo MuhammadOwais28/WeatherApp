@@ -13,11 +13,13 @@ class WeatherServices {
 
       if (response.statusCode == 200) {
         return WeatherModel.fromJson(jsonDecode(response.body));
+      } else if (response.statusCode == 404) {
+        throw Exception('Error 404 data not found');
       } else {
-        throw Exception('Error 404');
+        throw Exception('Error');
       }
     } catch (e) {
-      rethrow;
+      throw Exception("Error 404 Server not found");
     }
   }
 }
