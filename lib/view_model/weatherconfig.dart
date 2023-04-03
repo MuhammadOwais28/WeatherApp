@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 
 class WeatherConfig {
@@ -31,6 +32,33 @@ class WeatherConfig {
   };
 
   static Icon geticon(String key) {
-    return WeatherConfig.iconPack[key] ?? Icon(Icons.cloud);
+    return WeatherConfig.iconPack[key] ?? const Icon(Icons.cloud);
   }
+}
+
+class Time {
+  
+  static final _utcTime = DateTime.now().toUtc().hour;
+  static getTime(int timezone) {
+    final time = _utcTime + (timezone / 3600);
+    if (time > 24) {
+      return time - 24;
+    }
+    return time;
+  }
+
+  static getPic(int timezone) {
+    final time = getTime(timezone);
+    if (time >= 6 && time < 19) {
+      return 'assets/day.jpg';
+    } else {
+      return 'assets/night.jpg';
+    }
+  }
+
+  // static final utcTime = DateTime.utc();
+
+  // Get local time based on UTC time
+  // static final localTime = utc.toLocal();
+
 }

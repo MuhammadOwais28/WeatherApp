@@ -1,6 +1,7 @@
 class AppUrl {
   static late String _cityLocation;
 
+  // ignore: unnecessary_getters_setters
   String get location => _cityLocation;
   set location(String loc) {
     _cityLocation = loc;

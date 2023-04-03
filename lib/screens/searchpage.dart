@@ -14,7 +14,6 @@ class SearchBox extends StatelessWidget {
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.black,
-          
         ),
         backgroundColor: Colors.black,
         body: Padding(
@@ -22,13 +21,14 @@ class SearchBox extends StatelessWidget {
           child: TextFormField(
             onFieldSubmitted: (value) {
               searchProvider.searchCity(context);
+              
             },
             autofocus: true,
             controller: searchProvider.searchController,
             decoration: InputDecoration(
                 hintText: "Search any city",
-                prefixIcon: Icon(Icons.search_rounded),
-                contentPadding: EdgeInsets.all(10),
+                prefixIcon: const Icon(Icons.search_rounded),
+                contentPadding: const EdgeInsets.all(10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                 )),

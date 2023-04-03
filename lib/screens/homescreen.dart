@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 
 import 'package:mosam/services/weather_services.dart';
@@ -5,12 +7,9 @@ import 'package:mosam/utils/customfunctions.dart';
 
 import 'package:mosam/utils/routes.dart';
 import 'package:mosam/view_model/weatherconfig.dart';
-import 'package:provider/provider.dart';
-
-import '../view_model/search.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key, required this.city});
+  const HomeScreen({super.key, required this.city});
   final String city;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final searchProvider = Provider.of<SeachProvider>(context);
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     return SafeArea(
@@ -32,25 +30,21 @@ class _HomeScreenState extends State<HomeScreen> {
               future: weatherServices.getCityData(widget.city),
               builder: ((context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  print('yes');
-
                   return const Center(child: Loading());
                 } else if (!snapshot.hasData) {
-                  print('data nhi mil raha');
                   return Center(
                       child: Text(
                     'Data not found :"(',
                     style: Theme.of(context).textTheme.subtitle1,
                   ));
                 } else {
-                  print(snapshot.data);
                   return Stack(
                     children: [
                       Container(
                         height: height,
                         color: Colors.black,
                         child: Image.asset(
-                          "assets/eximage2.jpg",
+                          Time.getPic(snapshot.data!.timezone!),
                           fit: BoxFit.fitHeight,
                         ),
                       ),
@@ -58,13 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                           Text(
                             "${snapshot.data!.name!},${snapshot.data!.sys!.country!}",
                             textScaleFactor: 2,
-                            style: TextStyle(letterSpacing: 0.5),
+                            style: const TextStyle(letterSpacing: 0.5),
                           ),
                           SizedBox(
                             height: height * .005,
@@ -101,25 +95,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   .toLowerCase()))
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 5,
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                "H:" +
-                                    snapshot.data!.main!.tempMax!
-                                        .toStringAsFixed(0),
+                                "H:${snapshot.data!.main!.tempMax!.toStringAsFixed(0)}",
                                 style: Theme.of(context).textTheme.subtitle2,
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 width: 5,
                               ),
                               Text(
-                                "L:" +
-                                    snapshot.data!.main!.tempMin!
-                                        .toStringAsFixed(0),
+                                "L:${snapshot.data!.main!.tempMin!.toStringAsFixed(0)}",
                                 style: Theme.of(context).textTheme.subtitle2,
                               ),
                             ],
@@ -138,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               value: "${snapshot.data!.visibility} meters"),
                           InfoRow(
                               title: "Wind Speed",
-                              value: snapshot.data!.wind!.speed),
+                              value: "${snapshot.data!.wind!.speed} m/s"),
                           InfoRow(
                               title: "Direction",
                               value:
@@ -156,9 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(30)),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: const [
                                   Icon(Icons.search),
-                                  Text("Search City")
+                                  Text(
+                                    "Search City",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  )
                                 ],
                               ),
                             ),
@@ -173,25 +167,3 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class InfoRow extends StatelessWidget {
-  InfoRow({super.key, required this.title, required this.value});
-  final String title;
-  dynamic value;
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [Text(title), Text(value.toString())],
-          ),
-          const Divider(
-            thickness: 1.2,
-          )
-        ],
-      ),
-    );
-  }
-}
